@@ -1,0 +1,6 @@
+@LaptopKDS.Api_HostAddress = http://localhost:5013
+
+GET {{LaptopKDS.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
