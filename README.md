@@ -57,18 +57,38 @@ Sistem her cihaz için 6 temel kriteri değerlendirir:
 
 ## 🛠️ Kurulum ve Çalıştırma
 
-### 1. Gereksinimler
+### 🐳 Tek Komutla Canlıya Alma (Docker Compose)
+Tüm sistemi (Backend API + SQLite veritabanı + Nginx Reverse Proxy & React Frontend) tek bir komutla ayağa kaldırabilirsiniz:
+
+```bash
+docker compose up -d --build
+```
+
+- **Uygulama Arayüzü:** `http://localhost` (Port 80)
+- **Backend API:** `http://localhost:5000`
+- **Veritabanı Kalıcılığı:** `kds_data` volume'ü ile SQLite verileriniz konteyner yeniden başlasa dahi korunur.
+
+Durdurmak için:
+```bash
+docker compose down
+```
+
+---
+
+### 💻 Yerel Geliştirme (Local Development)
+
+#### 1. Gereksinimler
 - [.NET 10 SDK](https://dotnet.microsoft.com/)
 - [Node.js 18+](https://nodejs.org/)
 
-### 2. Backend'i Başlatma
+#### 2. Backend'i Başlatma
 ```bash
 cd backend/LaptopKDS.Api
 dotnet run
 ```
 Backend `http://localhost:5000` adresinde çalışır ve ilk açılışta SQLite veritabanını (`laptopkds.db`) otomatik oluşturup tohum (seed) verilerini yükler.
 
-### 3. Frontend'i Başlatma
+#### 3. Frontend'i Başlatma
 ```bash
 cd frontend/laptop-kds-ui
 npm install

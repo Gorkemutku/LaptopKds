@@ -8,9 +8,19 @@ var builder = WebApplication.CreateBuilder(args);
 // ─── Servisler ───────────────────────────────────────────────────────────────
 
 // EF Core + SQLite
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=laptopkds.db";
+var dbPathMatch = System.Text.RegularExpressions.Regex.Match(connectionString, @"Data Source=([^;]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+if (dbPathMatch.Success)
+{
+    var rawFilePath = dbPathMatch.Groups[1].Value.Trim();
+    var dir = Path.GetDirectoryName(rawFilePath);
+    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+    {
+        Directory.CreateDirectory(dir);
+    }
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Data Source=laptopkds.db"));
+    options.UseSqlite(connectionString));
 
 // TOPSIS servisi
 builder.Services.AddScoped<TopsisService>();
@@ -24,17 +34,13 @@ builder.Services.AddControllers();
 // .NET 10 built-in OpenAPI (Swagger UI: /openapi/v1.json)
 builder.Services.AddOpenApi();
 
-// CORS — React dev sunucusuna (5173) izin ver
+// CORS — Geliştirme ve Docker ortamları için esnek izinler
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://laptopkds.example.com"
-            )
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

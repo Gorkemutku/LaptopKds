@@ -1,0 +1,52 @@
+services:
+  # ─────────────────────────────────────────────────────────────
+  # BACKEND (.NET 10 Web API + EF Core SQLite)
+  # ─────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend/LaptopKDS.Api
+      dockerfile: Dockerfile
+    container_name: laptopkds-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/laptopkds.db
+    volumes:
+      # Veritabanının konteyner yeniden başlatılsa bile korunması için kalıcı volume
+      - kds_data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - kds-network
+
+  # ─────────────────────────────────────────────────────────────
+  # FRONTEND (React 18 + Vite + Nginx Reverse Proxy)
+  # ─────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend/laptop-kds-ui
+      dockerfile: Dockerfile
+    container_name: laptopkds-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - kds-network
+
+volumes:
+  kds_data:
+    driver: local
+
+networks:
+  kds-network:
+    driver: bridge
